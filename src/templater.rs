@@ -1,43 +1,11 @@
 use std::path::Path;
-use std::{collections::HashMap, error::Error, fmt};
-use roxmltree::{Document, Error as XmlError, Node};
+use std::collections::HashMap;
+use roxmltree::{Document, Node};
 use std::fs::File;
-use std::io::{Error as IoError, Write};
+use std::io::Write;
+use anyhow::{Result, anyhow};
 
 pub struct Templater {}
-
-#[derive(Debug)]
-pub enum TemplaterError {
-    Io(IoError),
-
-    XmlError(XmlError),
-    Other(String),
-}
-
-impl fmt::Display for TemplaterError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            TemplaterError::Io(ref err) => write!(f, "I/O error: {}", err),
-            TemplaterError::XmlError(ref err) => write!(f, "Xml error: {}", err),
-            TemplaterError::Other(ref msg) => write!(f, "Other error: {}", msg),
-        }
-    }
-}
-
-impl Error for TemplaterError {}
-
-impl From<IoError> for TemplaterError {
-    fn from(err: IoError) -> Self {
-        TemplaterError::Io(err)
-    }
-}
-
-
-impl From<XmlError> for TemplaterError {
-    fn from(err: XmlError) -> Self {
-        TemplaterError::XmlError(err)
-    }
-}
 
 enum BlockParserState {
     Searching,
@@ -45,7 +13,7 @@ enum BlockParserState {
 }
 
 impl Templater {
-    pub fn parse_document_xml(xml_content: &str) -> Result<HashMap<String, String>, TemplaterError> {
+    pub fn parse_document_xml(xml_content: &str) -> Result<HashMap<String, String>> {
         let doc = Document::parse(xml_content)?;
         let mut blocks: HashMap<String, String> = HashMap::new();
 
@@ -54,7 +22,7 @@ impl Templater {
         let body = doc
             .descendants()
             .find(|n| n.has_tag_name("body"))
-            .ok_or(TemplaterError::Other("Body not found".to_string()))?;
+            .ok_or(anyhow!("Body not found"))?;
 
         for node in body.children() {
             if !node.is_element() {
@@ -90,7 +58,7 @@ impl Templater {
         Ok(blocks)
     }
 
-    pub fn store_template(blocks: HashMap<String, String>, template_path: &str) -> Result<(), TemplaterError> {
+    pub fn store_template(blocks: HashMap<String, String>, template_path: &str) -> Result<()> {
         for (name, content) in blocks {
             let mut file = File::create(Path::new(template_path).join(format!("{name}.xml")))?;
             file.write_all(content.as_bytes())?;

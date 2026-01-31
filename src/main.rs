@@ -5,13 +5,13 @@ use std::io::Write;
 use std::path::PathBuf;
 
 use crate::rendered::{Renderer, Schema as RenderSchema};
-use crate::schemas::SchemaGenerator;
-use crate::templeter::Templater;
+use crate::schemas::{BlockData, SchemaGenerator};
+use crate::templater::Templater;
 use crate::word::WordParser;
 
 mod rendered;
 mod schemas;
-mod templeter;
+mod templater;
 mod word;
 
 /// autoWord: Render DOCX from Jinja-like XML templates or create templates from DOCX
@@ -60,11 +60,13 @@ fn main() -> Result<()> {
             let blocks = Templater::parse_document_xml(&document_xml)?;
             Templater::store_template(blocks.clone(), out.to_str().unwrap())?;
 
-            for (block_name, content) in blocks.into_iter() {
-                let schema_json = SchemaGenerator::parse(&content, &block_name)?;
-                let mut f = File::create(PathBuf::from(&out).join(format!("{block_name}.json")))?;
-                f.write_all(schema_json.as_bytes())?;
-            }
+            let mut f = File::create(PathBuf::from(&out).join(format!("schemas.json")))?;
+            let block_data_vec: Vec<BlockData> = blocks.into_iter().map(|(name, content)|  BlockData {
+                block_name: name,
+                block_content: content
+            }).collect();
+            let schema_json = SchemaGenerator::generate_shema(&block_data_vec)?;
+            f.write_all(schema_json.as_bytes())?;
 
             println!("Templates and schemas created in {}", out.display());
         }
@@ -98,5 +100,3 @@ fn main() -> Result<()> {
 
     Ok(())
 }
-
-

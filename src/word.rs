@@ -1,55 +1,14 @@
-use std::error::Error;
-use std::fmt;
 use std::fs::File;
-use std::io::{Error as IoError, Read, Write};
-use std::string::FromUtf8Error;
+use std::io::{Read, Write};
 use regex::Regex;
 use zip::write::SimpleFileOptions;
 use zip::{ZipArchive, ZipWriter};
-use zip::result::ZipError;
+use anyhow::{Result, anyhow};
 
-#[derive(Debug)]
-pub enum WordError {
-    Io(IoError),
-    FromUTF(FromUtf8Error),
-    Zip(ZipError),
-    Other(String),
-}
-
-impl fmt::Display for WordError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            WordError::Io(ref err) => write!(f, "I/O error: {}", err),
-            WordError::FromUTF(ref err) => write!(f, "UTF error: {}", err),
-            WordError::Zip(ref err) => write!(f, "Zip error: {}", err),
-            WordError::Other(ref msg) => write!(f, "Other error: {}", msg),
-        }
-    }
-}
-
-impl Error for WordError {}
-
-impl From<IoError> for WordError {
-    fn from(err: IoError) -> Self {
-        WordError::Io(err)
-    }
-}
-
-impl From<ZipError> for WordError {
-    fn from(err: ZipError) -> Self {
-        WordError::Zip(err)
-    }
-}
-
-impl From<FromUtf8Error> for WordError {
-    fn from(err: FromUtf8Error) -> Self {
-        WordError::FromUTF(err)
-    }
-}
 pub struct WordParser {}
 
 impl WordParser {
-    pub fn get_document_xml(path: &str) -> Result<String, WordError> {
+    pub fn get_document_xml(path: &str) -> Result<String> {
         let file = File::open(path)?;
         let mut archive = ZipArchive::new(file)?;
 
@@ -66,14 +25,14 @@ impl WordParser {
             }
         }
 
-        Err(WordError::Other("document.xml not found".to_string()))
+        Err(anyhow!("document.xml not found"))
     }
 
     pub fn update_document_xml(
         document_path: &str,
         output_path: &str,
         new_document_xml: &str,
-    ) -> Result<(), WordError> {
+    ) -> Result<()> {
         let file_in = File::open(document_path)?;
         let mut zip_in = ZipArchive::new(file_in)?;
 

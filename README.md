@@ -1,3 +1,4 @@
+![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)
 # DocxInfer
 DocxInfer - a cli tool written in Rust, that allows you to convert .docx file filled with Jinja2 markup into json file describing variables set in the markup. Mainly designed to allow LLM's to fill strictly styled documents.
 
@@ -25,22 +26,43 @@ docx-infer create --docx <your_docx_file_path>
 - find templates and schemas in ./templates dir
 ```
 templates
- ┣ hello world.json
  ┣ hello world.xml
- ┣ main.json
- ┗ main.xml
+ ┣ main.xml
+ ┗ schemas.json
 ```
 - Provide llm with schemas and necessary context
-Example `hello world.json`
+Example `schemas.json`
 ```json
-{
-  "Object": {
-    "author": "Var",
-    "persons": {
-      "Array": "Var"
+[
+  {
+    "block_name": "main",
+    "block_data_type": {
+      "kind": "Object",
+      "properties": {
+        "title": {
+          "kind": "String"
+        }
+      }
+    }
+  },
+  {
+    "block_name": "hello world",
+    "block_data_type": {
+      "kind": "Object",
+      "properties": {
+        "persons": {
+          "kind": "Array",
+          "element_type": {
+            "kind": "String"
+          }
+        },
+        "author": {
+          "kind": "String"
+        }
+      }
     }
   }
-}
+]
 ```
 (Var shall be interpreted as any string)
 - receive render schema from LLM in format
