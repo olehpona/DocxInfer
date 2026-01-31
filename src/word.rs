@@ -1,9 +1,9 @@
+use anyhow::{Result, anyhow};
+use regex::Regex;
 use std::fs::File;
 use std::io::{Read, Write};
-use regex::Regex;
 use zip::write::SimpleFileOptions;
 use zip::{ZipArchive, ZipWriter};
-use anyhow::{Result, anyhow};
 
 pub struct WordParser {}
 
@@ -62,14 +62,17 @@ impl WordParser {
 }
 
 fn sanitize_broken_tags(xml: &str) -> String {
-    let re = Regex::new(r"(\{\{(?:<[^>]+>)*?)(.*?)(?:<[^>]+>)*?\}\}").unwrap();
-    
+    let re = Regex::new(
+        r"\{(?:<[^>]+>)*?\{(.*?)\}(?:<[^>]+>)*?\}",
+    )
+    .unwrap();
+
     re.replace_all(xml, |caps: &regex::Captures| {
-        let raw_variable = &caps[2];
+        let raw_variable = &caps[1]; // Тепер змінна в 1-й групі
         let clean_var_name = remove_xml_tags(raw_variable);
-        
-        format!("{{{{ {} }}}}", clean_var_name.trim())
-    }).to_string()
+        format!("<w:t>{{{{ {} }}}}</w:t>", clean_var_name.trim())
+    })
+    .to_string()
 }
 
 fn remove_xml_tags(text: &str) -> String {
