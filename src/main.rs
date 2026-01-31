@@ -52,19 +52,14 @@ fn main() -> Result<()> {
 
     match cli.command {
         Commands::Create { docx, out } => {
-            // Ensure output directory exists
             fs::create_dir_all(&out)?;
-
-            // Extract document.xml from DOCX
             let document_xml = WordParser::get_document_xml(
                 docx.to_str().ok_or_else(|| anyhow!("Invalid DOCX path"))?,
             )?;
 
-            // Parse blocks based on markers and store templates
             let blocks = Templater::parse_document_xml(&document_xml)?;
             Templater::store_template(blocks.clone(), out.to_str().unwrap())?;
 
-            // Generate per-block schema JSONs using Jinja AST analysis
             for (block_name, content) in blocks.into_iter() {
                 let schema_json = SchemaGenerator::parse(&content, &block_name)?;
                 let mut f = File::create(PathBuf::from(&out).join(format!("{block_name}.json")))?;
@@ -78,11 +73,9 @@ fn main() -> Result<()> {
             docx,
             schema,
         } => {
-            // Read render schema JSON: Vec<rendered::Schema>
             let schema_json = fs::read_to_string(&schema)?;
             let schemas: Vec<RenderSchema> = serde_json::from_str(&schema_json)?;
 
-            // Render document; output is written as rendered_<docx-filename>
             Renderer::render(
                 schemas,
                 templates.to_str().ok_or_else(|| anyhow!("Invalid templates path"))?,

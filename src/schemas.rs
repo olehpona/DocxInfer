@@ -1,41 +1,35 @@
 use anyhow::Result;
 use minijinja::machinery::{ast, parse};
 use serde::Serialize;
-use std::{collections::HashMap, fs::File, io::Write, path::Path};
+use std::collections::HashMap;
 
 #[derive(Clone, Serialize)]
-enum Type {
+enum AstType {
     Var,
-    Object(HashMap<String, Type>),
-    Array(Box<Type>),
+    Object(HashMap<String, AstType>),
+    Array(Box<AstType>),
     Unknown,
 }
 
-impl Type {
-    fn ensure_path<'a>(&'a mut self, path: &[String]) -> &'a mut Type {
+impl AstType {
+    fn ensure_path<'a>(&'a mut self, path: &[String]) -> &'a mut AstType {
         let mut current = self;
 
         for key in path {
-            if let Type::Array(inner) = current {
+            if let AstType::Array(inner) = current {
                 current = inner;
             }
 
-            if !matches!(current, Type::Object(_)) {
-                *current = Type::Object(HashMap::new());
+            if !matches!(current, AstType::Object(_)) {
+                *current = AstType::Object(HashMap::new());
             }
 
-            if let Type::Object(map) = current {
-                current = map.entry(key.clone()).or_insert(Type::Var);
+            if let AstType::Object(map) = current {
+                current = map.entry(key.clone()).or_insert(AstType::Var);
             }
         }
         current
     }
-}
-
-#[derive(Serialize)]
-struct Schema {
-    block_name: String,
-    block_type: Type,
 }
 
 pub struct SchemaGenerator {}
@@ -43,28 +37,18 @@ pub struct SchemaGenerator {}
 impl SchemaGenerator {
     pub fn parse(source: &str, file_name: &str) -> Result<String> {
         let ast = parse(source, file_name, Default::default(), Default::default())?;
-        let mut root_schema = Type::Unknown;
+        let mut root_schema = AstType::Unknown;
         let mut aliases = HashMap::new();
 
         visit_stmt(&ast, &mut root_schema, &mut aliases);
 
         Ok(serde_json::to_string_pretty(&root_schema)?)
     }
-    pub fn store_schema(block_name: &str, block_type: Type, templates_path: &str) -> Result<()> {
-        let mut file = File::create(Path::new(templates_path).join(format!("{block_name}.json")))?;
-
-        let schema = Schema {
-            block_name: block_name.to_string(),
-            block_type: block_type
-        };
-        file.write_all(serde_json::to_vec_pretty(&schema)?.as_slice())?;
-        Ok(())
-    }
 }
 
 fn visit_stmt<'a>(
     stmt: &'a ast::Stmt,
-    root_schema: &mut Type,
+    root_schema: &mut AstType,
     aliases: &mut HashMap<String, Vec<String>>,
 ) {
     match stmt {
@@ -87,7 +71,7 @@ fn visit_stmt<'a>(
 
                 let target_node = root_schema.ensure_path(&full_path);
                 let inner_clone = target_node.clone();
-                *target_node = Type::Array(Box::new(inner_clone));
+                *target_node = AstType::Array(Box::new(inner_clone));
 
                 let mut loop_aliases = aliases.clone();
                 if let ast::Expr::Var(spanned) = &f.target {
