@@ -1,4 +1,6 @@
 ![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)
+![GitHub License](https://img.shields.io/github/license/olehpona/DocxInfer?style=for-the-badge)
+
 # DocxInfer
 DocxInfer - a cli tool written in Rust, that allows you to convert .docx file filled with Jinja2 markup into json file describing variables set in the markup. Mainly designed to allow LLMs to fill strictly styled documents.
 
