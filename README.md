@@ -30,7 +30,8 @@ templates
  ┣ main.xml
  ┗ schemas.json
 ```
-- Provide llm with schemas and necessary context
+- Provide llm with schemas and necessary context  
+
 Example `schemas.json`
 ```json
 [
@@ -64,7 +65,6 @@ Example `schemas.json`
   }
 ]
 ```
-(Var shall be interpreted as any string)
 - receive render schema from LLM in format
 ``` json
 [

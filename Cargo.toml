@@ -1,5 +1,8 @@
 [package]
 name = "docx-infer"
+description = "cli tool, that allows you to convert .docx file filled with Jinja2 markup into json file describing variables set in the markup"
+license="MIT"
+repository="https://github.com/olehpona/DocxInfer"
 version = "0.1.0"
 edition = "2024"
 
