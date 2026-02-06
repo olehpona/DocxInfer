@@ -62,7 +62,7 @@ fn main() -> Result<()> {
             )?;
 
             let blocks = Templater::parse_document_xml(&document_xml)?;
-            Templater::store_template(blocks.clone(), out.to_str().unwrap())?;
+            Templater::store_template(blocks.clone(), out.to_str().ok_or(anyhow!("Failed to get path str"))?)?;
 
             let mut f = File::create(PathBuf::from(&out).join("schemas.json"))?;
             let block_data_vec: Vec<BlockData> = blocks
