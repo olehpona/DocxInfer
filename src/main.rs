@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use clap::{Parser, Subcommand};
 use std::fs::{self, File};
 use std::io::Write;
@@ -16,7 +16,11 @@ mod word;
 
 /// autoWord: Render DOCX from Jinja-like XML templates or create templates from DOCX
 #[derive(Parser, Debug)]
-#[command(name = "autoWord", version, about = "Generate DOCX using templates, or extract templates from a DOCX")]
+#[command(
+    name = "autoWord",
+    version,
+    about = "Generate DOCX using templates, or extract templates from a DOCX"
+)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -60,11 +64,14 @@ fn main() -> Result<()> {
             let blocks = Templater::parse_document_xml(&document_xml)?;
             Templater::store_template(blocks.clone(), out.to_str().unwrap())?;
 
-            let mut f = File::create(PathBuf::from(&out).join(format!("schemas.json")))?;
-            let block_data_vec: Vec<BlockData> = blocks.into_iter().map(|(name, content)|  BlockData {
-                block_name: name,
-                block_content: content
-            }).collect();
+            let mut f = File::create(PathBuf::from(&out).join("schemas.json"))?;
+            let block_data_vec: Vec<BlockData> = blocks
+                .into_iter()
+                .map(|(name, content)| BlockData {
+                    block_name: name,
+                    block_content: content,
+                })
+                .collect();
             let schema_json = SchemaGenerator::generate_shema(&block_data_vec)?;
             f.write_all(schema_json.as_bytes())?;
 
@@ -80,18 +87,18 @@ fn main() -> Result<()> {
 
             Renderer::render(
                 schemas,
-                templates.to_str().ok_or_else(|| anyhow!("Invalid templates path"))?,
+                templates
+                    .to_str()
+                    .ok_or_else(|| anyhow!("Invalid templates path"))?,
                 docx.to_str().ok_or_else(|| anyhow!("Invalid DOCX path"))?,
             )?;
 
             println!(
                 "Successfully rendered {} -> rendered_{}",
-                docx
-                    .file_name()
+                docx.file_name()
                     .and_then(|s| s.to_str())
                     .unwrap_or("input.docx"),
-                docx
-                    .file_name()
+                docx.file_name()
                     .and_then(|s| s.to_str())
                     .unwrap_or("input.docx")
             );

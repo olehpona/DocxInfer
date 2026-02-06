@@ -2,11 +2,7 @@ use anyhow::{Error, Result};
 use roxmltree::Document;
 use serde::Deserialize;
 use serde_json::Value;
-use std::{
-    fs::File,
-    io::Read,
-    path::PathBuf,
-};
+use std::{fs::File, io::Read, path::PathBuf};
 
 use crate::word;
 
@@ -67,7 +63,7 @@ impl Renderer {
             rendered_document_path
                 .to_str()
                 .ok_or(Error::msg("Render Error: failed converting path to str"))?,
-            format!("{}{}{}",prefix, new_body_content, suffix).as_str()
+            format!("{}{}{}", prefix, new_body_content, suffix).as_str(),
         )?;
         Ok(())
     }

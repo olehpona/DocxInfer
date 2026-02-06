@@ -1,9 +1,9 @@
-use std::path::Path;
-use std::collections::HashMap;
+use anyhow::{Result, anyhow};
 use roxmltree::{Document, Node};
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
-use anyhow::{Result, anyhow};
+use std::path::Path;
 
 pub struct Templater {}
 

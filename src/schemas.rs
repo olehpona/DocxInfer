@@ -42,12 +42,12 @@ impl AstType {
 #[derive(Clone, Serialize)]
 struct Schema {
     pub block_name: String,
-    pub block_data_type: AstType
+    pub block_data_type: AstType,
 }
 
 pub struct BlockData {
     pub block_name: String,
-    pub block_content: String
+    pub block_content: String,
 }
 
 pub struct SchemaGenerator {}
@@ -62,13 +62,13 @@ impl SchemaGenerator {
 
         Ok(root_type)
     }
-    
+
     pub fn generate_shema(data: &Vec<BlockData>) -> Result<String> {
         let mut schemas_vec: Vec<Schema> = Vec::new();
         for block in data {
             schemas_vec.push(Schema {
                 block_name: block.block_name.clone(),
-                block_data_type: Self::parse(&block.block_content, &block.block_name)?
+                block_data_type: Self::parse(&block.block_content, &block.block_name)?,
             });
         }
 
@@ -76,8 +76,8 @@ impl SchemaGenerator {
     }
 }
 
-fn visit_stmt<'a>(
-    stmt: &'a ast::Stmt,
+fn visit_stmt(
+    stmt: &ast::Stmt,
     root_type: &mut AstType,
     aliases: &mut HashMap<String, Vec<String>>,
 ) {
@@ -101,7 +101,9 @@ fn visit_stmt<'a>(
 
                 let target_node = root_type.ensure_path(&full_path);
                 let inner_clone = target_node.clone();
-                *target_node = AstType::Array{element_type: Box::new(inner_clone)};
+                *target_node = AstType::Array {
+                    element_type: Box::new(inner_clone),
+                };
 
                 let mut loop_aliases = aliases.clone();
                 if let ast::Expr::Var(spanned) = &f.target {

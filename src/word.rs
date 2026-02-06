@@ -62,10 +62,7 @@ impl WordParser {
 }
 
 fn sanitize_broken_tags(xml: &str) -> String {
-    let re = Regex::new(
-        r"\{(?:<[^>]+>)*?\{(.*?)\}(?:<[^>]+>)*?\}",
-    )
-    .unwrap();
+    let re = Regex::new(r"\{(?:<[^>]+>)*?\{(.*?)\}(?:<[^>]+>)*?\}").unwrap();
 
     re.replace_all(xml, |caps: &regex::Captures| {
         let raw_variable = &caps[1]; // Тепер змінна в 1-й групі

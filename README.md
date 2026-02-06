@@ -3,7 +3,7 @@
 DocxInfer - a cli tool written in Rust, that allows you to convert .docx file filled with Jinja2 markup into json file describing variables set in the markup. Mainly designed to allow LLM's to fill strictly styled documents.
 
 ## Key features
-- Automatic restoration of broken Jinja2 tags in XML.
+- Automatic restoration of broken Jinja2 tags in XML ( Simple regex matching but working ).
 - Generation of schemas in json format based on AST parsing.
 - Loop support
 
@@ -18,7 +18,7 @@ DocxInfer - a cli tool written in Rust, that allows you to convert .docx file fi
 ## How to use it
 - Get it on your computer
 - Create your template docx
-![template docx example](images/templete_example.png)
+![template docx example](images/template_example.png)
 - run 
 ```sh
 docx-infer create --docx <your_docx_file_path>
