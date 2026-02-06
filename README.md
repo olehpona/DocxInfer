@@ -19,6 +19,9 @@ DocxInfer - a cli tool written in Rust, that allows you to convert .docx file fi
 
 ## How to use it
 - Get it on your computer
+```sh
+cargo install docx-infer
+```
 - Create your template docx
 ![template docx example](images/template_example.png)
 - run 
